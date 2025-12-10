@@ -1,0 +1,109 @@
+# Task 2: Subsetting & Missing Data – Planéta "Orionis"
+# ------------------------------------------------------------
+
+# --- 2.1 Querying Vectors -----------------------------------
+
+# 2.1.1 Sekvenčný vektor
+cat("3. prvok progression_vector:\n")
+print(progression_vector[3])
+
+cat("Prvky 2 až 5:\n")
+print(progression_vector[2:5])
+
+cat("Hodnoty väčšie ako 60:\n")
+print(progression_vector[progression_vector > 60])
+cat("\n")
+
+# 2.1.2 Logický vektor
+cat("Len TRUE hodnoty:\n")
+print(binary_pattern[binary_pattern])
+
+cat("Indexy TRUE hodnôt:\n")
+print(which(binary_pattern))
+cat("\n")
+
+
+# --- 2.2 Querying List ---------------------------------------
+
+cat("Popis planéty pomocou $ operátora:\n")
+print(orionis_compendium$description)
+
+cat("Matica uložená v liste:\n")
+print(orionis_compendium[[ "orionis_grid" ]])
+
+cat("Druhý prvok z quantitative_vector v rámci listu:\n")
+print(orionis_compendium$quantitative_vector[2])
+cat("\n")
+
+
+# --- 2.3 Data Frame Operations -------------------------------
+
+cat("Prvé tri riadky dátového rámca:\n")
+print(head(orionis_data, 3))
+
+cat("Hodnota v 4. riadku, 1. stĺpci:\n")
+print(orionis_data[4, 1])
+
+cat("Logický stĺpec Habitable ako vektor:\n")
+print(orionis_data$Habitable)
+
+# Logické podmnožiny
+cat("\nPodmnožina obývateľných regiónov:\n")
+df_subset <- orionis_data[orionis_data$Habitable == TRUE, ]
+print(df_subset)
+
+# %in% subsetting – výber dvoch konkrétnych terénov
+cat("\nPodmnožina len pre 'coastal' a 'plateau' regióny:\n")
+df_subset_2 <- orionis_data[orionis_data$Terrain %in% c("coastal", "plateau"), ]
+print(df_subset_2)
+cat("\n")
+
+
+# --- 2.4 Handling “Corrupted” Data (NA) -----------------------
+
+df_corrupted <- orionis_data
+
+# Zavedenie troch chýbajúcich hodnôt (NAs)
+df_corrupted[2, 3] <- NA
+df_corrupted[5, 4] <- NA
+df_corrupted[6, 2] <- NA
+
+cat("Dátový rámec s NA hodnotami:\n")
+print(df_corrupted)
+
+# Počet všetkých NA
+cat("\nCelkový počet chýbajúcich hodnôt:\n")
+print(sum(is.na(df_corrupted)))
+
+# Počet NAs podľa stĺpcov
+cat("Počet NA v jednotlivých stĺpcoch:\n")
+print(colSums(is.na(df_corrupted)))
+
+# Výpočet priemeru s NA
+cat("\nPriemer EnergyIndex (vrátane NA):\n")
+print(mean(df_corrupted$EnergyIndex))
+
+cat("Priemer EnergyIndex (ignorujúc NA):\n")
+print(mean(df_corrupted$EnergyIndex, na.rm = TRUE))
+
+# Odstránenie riadkov s NA
+cat("\nDátový rámec po odstránení chýbajúcich riadkov:\n")
+df_clean <- na.omit(df_corrupted)
+print(df_clean)
+cat("\n")
+
+
+# --- 2.5 Bonus Challenge: which() -----------------------------
+
+# Najvyššia populácia
+highest_pop_index <- which.max(orionis_data$Population_k)
+cat("Index s najvyššou populáciou:\n")
+print(highest_pop_index)
+
+cat("Riadok s najvyššou populáciou:\n")
+print(orionis_data[highest_pop_index, ])
+
+# Najnižšia teplota
+lowest_temp_index <- which.min(orionis_data$AvgTemp_C)
+cat("\nRiadok s najnižšou teplotou:\n")
+print(orionis_data[lowest_temp_index, ])
