@@ -146,4 +146,5 @@ orionis_data$Energy_per_capita <- orionis_data$EnergyIndex / (orionis_data$Popul
 cat("Data frame s pridaným výpočtovým stĺpcom:\n")
 print(orionis_data)
 
+
 cat("\n-- Hotovo: dátový svet planéty Orionis je inicializovaný. --\n")
