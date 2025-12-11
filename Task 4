@@ -1,141 +1,87 @@
-# ==============================================================================
-# TASK 4: VYTVORENIE NÁSTROJOVÉHO KÓDU (FUNKCIE) PRE ANALÝZU ČÍLSKYCH MIEST
-# ==============================================================================
+---
+title: "task4"
+format: html
+editor: visual
+---
 
-# Načítanie potrebných knižníc
-library(readxl) 
-library(dplyr)
-library(readr)
+## Task 4 – Building a Toolkit
 
-# -----------------------------------------------------
-# 4.1. The "GREETING" FUNCTION
-# -----------------------------------------------------
+```{r}
+## Task 4 – Building a Toolkit
 
-#' Vytlačí uvítaciu správu pre analytický nástroj.
-#' @param analyst_name Meno analytika, ktorý správu pripravuje.
-chilean_city_analyst_welcome <- function(analyst_name) {
-  cat("\n============================================\n")
-  cat("Analytický nástroj pre ČÍLSKE MESTÁ 🇨🇱\n")
-  cat("Správu pripravil: Dr.", analyst_name, "\n")
-  cat("============================================\n")
+# 4.1 Greeting Function --------------------------------------
+
+welcome_to_my_universe <- function(your_name) {
+  cat("--------------------------------\n")
+  cat("Analysis Toolkit for Chilean Cities\n")
+  cat("Report prepared by:", your_name, "\n")
+  cat("--------------------------------\n")
 }
 
-# -----------------------------------------------------
-# 4.2. The "LOADING" FUNCTION
-# -----------------------------------------------------
+# Call greeting
+welcome_to_my_universe("Oliver Konečný")
 
-#' Načíta dáta z cesty k súboru a vykoná základnú inšpekciu.
-#' @param file_path Cesta k súboru s dátami (predpokladá sa .xlsx alebo .csv).
-#' @return Dáta frame načítané zo súboru.
+
+# 4.2 Loading Function ---------------------------------------
+
+library(dplyr)
+library(readr)
+library(readxl)
+
 load_and_inspect <- function(file_path) {
-  # Prispôsobenie pre formát .xlsx z Tasku 3
-  if (grepl("\\.xlsx$", tolower(file_path))) {
-    data <- read_excel(file_path)
-  } else if (grepl("\\.csv$", tolower(file_path))) {
-    data <- read_csv(file_path, show_col_types = FALSE)
-  } else {
-    stop("Nepodporovaný formát súboru. Použite .xlsx alebo .csv.")
-  }
-  
-  cat("\n--- Dáta úspešne načítané z:", file_path, "---\n")
-  
-  cat("\n--- Štruktúra dát (glimpse): ---\n")
-  print(glimpse(data)) 
-  
-  cat("\n--- Prvých 6 riadkov (head): ---\n")
+  data <- read_excel(file_path)
+  cat("--- Data Loaded:", file_path, "---\n")
+  print(glimpse(data))
+  cat("\n--- First 6 Rows: ---\n")
   print(head(data))
-  
   return(data)
 }
 
-# -----------------------------------------------------
-# 4.3. The "QUERY" FUNCTION
-# -----------------------------------------------------
+# Call loading function
+chile_data <- load_and_inspect("cl.xlsx")
 
-#' Filtruje mestá na základe názvu regiónu a minimálnej populácie.
-#' @param data Dáta frame Čílskych miest.
-#' @param region_name Názov regiónu pre filtrovanie.
-#' @param pop_threshold Minimálna požadovaná populácia.
-#' @return Dáta frame s mestami spĺňajúcimi podmienky.
-filter_cities_by_region_and_pop <- function(data, region_name, pop_threshold) {
-  
+
+# 4.3 Query Function -----------------------------------------
+
+# Function to filter cities by population threshold
+filter_cities_by_population <- function(data, pop_threshold) {
   result <- data %>%
-    filter(admin_name == region_name, population > pop_threshold) %>%
+    filter(population > pop_threshold) %>%
     select(city, admin_name, population) %>%
     arrange(desc(population))
-  
-  cat(paste0("\n--- Mestá v regióne '", region_name, "' s populáciou > ", 
-             pop_threshold, " nájdené. ---\n"))
   
   return(result)
 }
 
+# Call query function
+big_cities <- filter_cities_by_population(chile_data, 500000)
+print(big_cities)
 
-# -----------------------------------------------------
-# 4.4. The "REPORTING" FUNCTION
-# -----------------------------------------------------
 
-#' Generuje súhrnnú správu kľúčových štatistík pre konkrétny administratívny región.
-#' @param data Dáta frame Čílskych miest.
-#' @param region_name Názov administratívneho regiónu pre filtrovanie.
+# 4.4 Reporting Function -------------------------------------
+
 generate_region_report <- function(data, region_name) {
   
-  # 1. Agregácia dát pre zadaný región
-  region_summary <- data %>%
-    filter(admin_name == region_name) %>%
-    summarise(
-      Total_Population = sum(population, na.rm = TRUE),
-      City_Count = n(),
-      Max_City_Population = max(population, na.rm = TRUE)
-    )
+  # Filter for region
+  region_data <- data %>%
+    filter(admin_name == region_name)
   
-  # Extrakcia štatistík (použitie [[1]] pre robustnú extrakciu z jedno-riadkového data frame)
-  total_pop <- region_summary$Total_Population[[1]]
-  city_count <- region_summary$City_Count[[1]]
-  max_pop <- region_summary$Max_City_Population[[1]]
+  # Calculate stats
+  avg_pop <- mean(region_data$population, na.rm = TRUE)
+  max_pop <- max(region_data$population, na.rm = TRUE)
+  min_pop <- min(region_data$population, na.rm = TRUE)
+  city_count <- nrow(region_data)
   
-  # 2. Tlač formátovanej správy
-  cat("\n============================================\n")
-  cat("Správa regiónu:", region_name, "\n")
-  cat("============================================\n")
-  cat("1. Počet spracovaných záznamov (miest):", city_count, "\n")
-  cat("2. Celková populácia v mestách:        ", format(total_pop, big.mark = ","), "\n") 
-  cat("3. Populácia najväčšieho mesta:        ", format(max_pop, big.mark = ","), "\n")
-  cat("--------------------------------------------\n")
+  # Print report
+  cat("\n--- Report for Region:", region_name, "---\n")
+  cat("Number of Cities:", city_count, "\n")
+  cat("Average Population:", round(avg_pop, 0), "\n")
+  cat("Maximum Population:", max_pop, "\n")
+  cat("Minimum Population:", min_pop, "\n")
+  cat("----------------------------------\n\n")
 }
 
-# Krok A: Privítanie (4.1)
-chilean_city_analyst_welcome("Váš Analytik Územného Plánovania")
-
-# Krok B: Načítanie a inšpekcia dát (4.2)
-tryCatch({
-  # Načítanie súboru, ktorý bol použitý v Tasku 3
-  my_data <- load_and_inspect("cl.xlsx")
-  
-  # Krok C: Vykonanie dotazu s parametrami (4.3)
-  cat("\n\n*** VÝSLEDOK FUNKCIE 4.3 (PARAMETRICKÝ DOTAZ) ***\n")
-  
-  # Nájdite mestá v regióne Antofagasta s populáciou nad 50 000
-  cities_in_antofagasta <- filter_cities_by_region_and_pop(
-    my_data, 
-    region_name = "Antofagasta", 
-    pop_threshold = 50000
-  )
-  
-  print(cities_in_antofagasta)
-  
-  # Krok D: Generovanie reportov (4.4)
-  cat("\n\n*** VÝSLEDKY FUNKCIE 4.4 (GENEROVANIE REPORTU) ***\n")
-  
-  # Report pre Región Metropolitana de Santiago
-  generate_region_report(my_data, "Región Metropolitana de Santiago")
-  
-  # Report pre Región de Valparaíso (použitý v Tasku 3)
-  generate_region_report(my_data, "Valparaíso")
-  
-}, error = function(e) {
-  cat("\n\n!!! CHYBA V CHODE PROGRAMU !!!\n")
-  cat("Nastala chyba pri načítaní alebo spracovaní dát:\n")
-  cat("Chyba:", conditionMessage(e), "\n")
-  cat("Skontrolujte, či je súbor 'cl.xlsx' v správnom formáte a v pracovnom adresári.")
-})
+# Call reporting function for two regions
+generate_region_report(chile_data, "Región Metropolitana")
+generate_region_report(chile_data, "Valparaíso")
+```
