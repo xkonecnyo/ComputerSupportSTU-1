@@ -1,52 +1,52 @@
----
-title: "Task 3"
-format: html
-editor: visual
----
-```{r}
-# ------------------------------
-# Task 3: Expanding Your Universe
-# Dataset: Chilean cities
-# Source: https://simplemaps.com/data/world-cities
-# ------------------------------
+## Task 3 – Expanding Your Universe
 
-# 1. Load libraries
+```{r}
+# 3.1 The Quest: Find Your Data
+# Data from: https://simplemaps.com/data/world-cities (Chile subset)
+
+# 3.2 The Import: Load Your Data
 library(dplyr)
+library(readr)
 library(readxl)
 
-# 2. Import dataset
-my_real_data <- read_excel("cl.xlsx")
+# načítanie Excel datasetu (Chile cities)
+chile_data <- read_excel("cl.xlsx")
 
-# 3. First inspection
-glimpse(my_real_data)
-head(my_real_data)
-summary(my_real_data)
+# prvá kontrola dát
+glimpse(chile_data)
+head(chile_data)
+summary(chile_data)
 
-# 4. Exploration with dplyr
+# 3.3 The Interrogation: Explore with dplyr
 
-## Question 1: Which 5 cities have the highest population?
-my_real_data %>%
+# Question 1: Ktoré 5 miest má najvyššiu populáciu?
+chile_data %>%
   select(city, population) %>%
   arrange(desc(population)) %>%
   head(5)
 
-## Question 2: What is the average population of cities in each administrative region?
-my_real_data %>%
+# Question 2: Aká je priemerná populácia podľa administratívneho regiónu?
+chile_data %>%
   group_by(admin_name) %>%
-  summarise(avg_population = mean(population, na.rm = TRUE))
+  summarise(avg_population = mean(population, na.rm = TRUE)) %>%
+  arrange(desc(avg_population))
 
-## Question 3: How many cities are classified as "admin", "minor", or "primary" capitals?
-my_real_data %>%
-  group_by(capital) %>%
-  summarise(count = n())
+# Question 3: Ktoré mestá sú hlavné (capital) a akú majú populáciu?
+chile_data %>%
+  filter(capital %in% c("primary", "admin", "minor")) %>%
+  select(city, capital, population) %>%
+  arrange(desc(population))
 
-## Question 4: Create a new column for population difference between total population and proper population.
-my_real_data %>%
-  mutate(pop_diff = population - population_proper) %>%
-  select(city, population, population_proper, pop_diff)
+# Question 4: Vypočítaj proxy hustotu populácie (populácia / vzdialenosť od rovníka v stupňoch lat).
+chile_data %>%
+  mutate(lat_distance = abs(lat),
+         density_proxy = population / lat_distance) %>%
+  select(city, population, lat_distance, density_proxy) %>%
+  arrange(desc(density_proxy)) %>%
+  head(10)
 
-## Question 5: Find all cities south of latitude -40 with population greater than 100,000.
-my_real_data %>%
-  filter(lat < -40, population > 100000) %>%
-  select(city, lat, population)
-```
+# Question 5: Koľko miest je v každom administratívnom regióne?
+chile_data %>%
+  group_by(admin_name) %>%
+  summarise(city_count = n()) %>%
+  arrange(desc(city_count))
