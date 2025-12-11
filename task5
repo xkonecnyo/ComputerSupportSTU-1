@@ -1,0 +1,60 @@
+---
+title: "Task 5: Visualising Chilean Cities"
+author: "Oliver Konečný"
+format: html
+---
+```{r}
+# 5.0 Príprava prostredia -----------------------------------
+# Inštalácia balíkov a načítanie
+packages <- c("ggplot2", "readxl", "dplyr")
+for (pkg in packages) {
+  if (!requireNamespace(pkg, quietly = TRUE)) install.packages(pkg)
+}
+invisible(lapply(packages, library, character.only = TRUE))
+
+# Načítanie datasetu (Chile cities)
+chile_data <- read_excel("cl.xlsx")
+
+# Rýchla kontrola dát
+glimpse(chile_data)
+summary(chile_data)
+
+# 5.1 Quick Sketch – Base R Histogram ------------------------
+hist(chile_data$population,
+     main = "Distribúcia populácií miest v Chile",
+     xlab = "Populácia (počet obyvateľov)",
+     col = "lightblue",
+     border = "white")
+
+# 5.2 Relationship Map – Scatter Plot -----------------------
+p_scatter <- ggplot(data = chile_data, aes(x = lat, y = population)) +
+  geom_point(alpha = 0.7, size = 3, colour = "blue") +
+  geom_smooth(method = "loess", color = "gray") +
+  labs(title = "Populácia vs. zemepisná šírka miest v Chile",
+       subtitle = "Vizualizácia vzťahu medzi polohou a veľkosťou miest",
+       x = "Zemepisná šírka (stupne)",
+       y = "Populácia") +
+  theme_minimal()
+
+p_scatter
+
+# 5.3 Comparison – Boxplot ----------------------------------
+ggplot(data = chile_data, aes(x = capital, y = population, fill = capital)) +
+  geom_boxplot() +
+  labs(title = "Porovnanie populácie podľa statusu hlavného mesta",
+       x = "Status hlavného mesta (capital)",
+       y = "Populácia") +
+  theme_light() +
+  theme(legend.position = "none")
+
+# 5.4 Deep Dive – Faceting ----------------------------------
+ggplot(data = chile_data, aes(x = population)) +
+  geom_histogram(bins = 15, fill = "coral", color = "black") +
+  facet_wrap(~ admin_name) +
+  labs(title = "Distribúcia populácií miest podľa regiónov",
+       x = "Populácia",
+       y = "Počet miest")
+
+# 5.5 Exporting ---------------------------------------------
+ggsave("chile_population_vs_latitude.png", plot = p_scatter, width = 8, height = 6)
+```
